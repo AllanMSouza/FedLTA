@@ -130,16 +130,19 @@ class JointAnalysis():
                                         st = copy.copy(strategy).replace('FedAVG', 'FedAvg')
                                         s = "Original"
 
+                                    level = {0.3: 'Baixo', 0.5: 'Médio', 0.7: 'Alto'}[fraction_fit]
+
                                     print("f1: ", filename1)
                                     # print("f2: ", filename2)
                                     df['Strategy'] = np.array([st] * len(df))
                                     df['Version'] = np.array([s] * len(df))
                                     df['Experiment'] = np.array([i] * len(df))
                                     df['Fraction fit'] = np.array([fraction_fit] * len(df))
+                                    df['Nível de seleção'] = np.array([level] * len(df))
                                     df['Dataset'] = np.array([dataset.replace("WATCH", "W").replace("CIFAR10", "CIFAR-10")] * len(df))
                                     df['Solution'] = np.array([compression] * len(df))
                                     df['Alpha'] = np.array([alpha] * len(df))
-                                    df['Client selection'] = np.array([client_selection.replace("None", "Random")] * len(df))
+                                    df['Client selection'] = np.array([client_selection.replace("None", "Randômico").replace('Random', 'Randômico')] * len(df))
                                     df['Method'] = np.array([st + s.replace("Original", "")] * len(df))
                                     if client_selection in ['DEEV', 'RAWCS']:
                                         df_server['Round'] = df_server['Server round'].to_numpy()
@@ -157,16 +160,19 @@ class JointAnalysis():
 
         # df_concat = self.convert_shared_layers(df_concat)
         print(df_concat)
-        df_concat['Accuracy (%)'] = df_concat['Accuracy'] * 100
-        df_concat['Round (t)'] = df_concat['Round']
+        df_concat['Acurácia (%)'] = df_concat['Accuracy'] * 100
+        df_concat['Rodada (t)'] = df_concat['Round']
         # plots
         # self.joint_plot_acc_two_plots(df=df_concat, experiment=1, pocs=pocs)
         # self.joint_plot_acc_two_plots(df=df_concat, experiment=1, pocs=pocs)
         print("versao1: ", df_concat[['Strategy', 'Version']].drop_duplicates())
         print(df_concat[['Strategy', 'Fraction fit', 'Dataset', 'Version', 'Alpha', 'Client selection', 'Method']].drop_duplicates())
         # exit()
-        self.joint_plot_acc_four_plots(df=df_concat, experiment=40, alphas=alphas)
-        self.joint_plot_acc_four_plots_efficiency(df=df_concat, experiment=40, alphas=alphas)
+        df_concat = df_concat[['Rodada (t)', 'Loss', 'Size of parameters', 'Strategy', 'Acurácia (%)', 'Nível de seleção', 'Experiment', 'Fraction fit', 'Dataset', 'Version', 'Alpha', 'Client selection', 'Method', 'Training cost']].groupby(['Rodada (t)', 'Strategy', 'Nível de seleção', 'Experiment', 'Fraction fit', 'Dataset', 'Version', 'Alpha', 'Client selection', 'Method']).apply(lambda e: self.groupb_by_plot(e)).reset_index()[['Rodada (t)', 'Strategy', 'Nível de seleção', 'Experiment', 'Fraction fit', 'Dataset', 'Size of parameters (bytes)', 'Acurácia (%)', 'Loss', 'Version', 'Alpha', 'Client selection', 'Method', 'Eficiência']]
+        self.joint_plot_acc_four_plots(df_test=df_concat, experiment=40, alphas=alphas, dataset='CIFAR-10')
+        self.joint_plot_acc_four_plots_efficiency(df_test=df_concat, experiment=40, alphas=alphas, dataset='CIFAR-10')
+        self.joint_plot_acc_four_plots(df_test=df_concat, experiment=40, alphas=alphas, dataset='GTSRB')
+        self.joint_plot_acc_four_plots_efficiency(df_test=df_concat, experiment=40, alphas=alphas, dataset='GTSRB')
         # self.joint_plot_acc_four_plots(df=df_concat, experiment=2, alphas=alphas)
         # self.joint_plot_acc_four_plots(df=df_concat, experiment=3, alphas=alphas)
         # self.joint_plot_acc_four_plots(df=df_concat, experiment=4, fractions_fit=fractions_fit)
@@ -190,7 +196,26 @@ class JointAnalysis():
         strategies = aux
         print("finai: ", strategies)
         print("Experimento 1")
-        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='CIFAR-10')
+        metric_column = 'Acurácia (%)'
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='CIFAR-10', nivel='Baixo', metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='GTSRB', nivel='Baixo', metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='CIFAR-10', nivel='Médio', metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='GTSRB', nivel='Médio', metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='CIFAR-10', nivel='Alto', metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='GTSRB', nivel='Alto', metric_column=metric_column)
+        metric_column = 'Eficiência'
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='CIFAR-10', nivel='Baixo',
+                         metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='GTSRB', nivel='Baixo',
+                         metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='CIFAR-10', nivel='Médio',
+                         metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='GTSRB', nivel='Médio',
+                         metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='CIFAR-10', nivel='Alto',
+                         metric_column=metric_column)
+        self.joint_table(df_concat, alphas, strategies, experiment=40, dataset='GTSRB', nivel='Alto',
+                         metric_column=metric_column)
         print("Experimento 2")
         # self.joint_table(df_concat, alphas, strategies, experiment=2)
         # self.joint_table(df_concat, fractions_fit, strategies, experiment=3)
@@ -254,9 +279,9 @@ class JointAnalysis():
 
     def groupb_by_table(self, df):
         parameters = int(df['Size of parameters'].mean())
-        accuracy = df['Accuracy (%)'].mean()
+        accuracy = df['Acurácia (%)'].mean()
 
-        return pd.DataFrame({'Size of parameters (bytes)': [parameters], 'Accuracy (%)': [accuracy]})
+        return pd.DataFrame({'Size of parameters (bytes)': [parameters], 'Acurácia (%)': [accuracy]})
 
     def accuracy_improvement(self, df):
 
@@ -284,8 +309,8 @@ class JointAnalysis():
 
                 for column in columns:
                     print((df.loc[reference_index, column][:4]), reference_index, column)
-                    difference = str(round(float(df.loc[reference_index, column][:4]) - float(df.loc[target_index, column][:4]), 1))
-                    difference = str(round(float(difference)*100/float(df.loc[target_index, column][:4]), 1))
+                    difference = str(round(float(df.loc[reference_index, column][:4].replace(u"\u00B1", "")) - float(df.loc[target_index, column][:4].replace(u"\u00B1", "")), 1))
+                    difference = str(round(float(difference)*100/float(df.loc[target_index, column][:4].replace(u"\u00B1", "")), 1))
                     if difference[0] != "-":
                         difference = "textuparrow" + difference
                     else:
@@ -300,22 +325,22 @@ class JointAnalysis():
         return df_difference
 
 
-    def joint_table(self, df, pocs, strategies, experiment, dataset):
+    def joint_table(self, df, pocs, strategies, experiment, dataset, nivel, metric_column):
 
-
+        df = df[df['Nível de seleção'] == nivel]
 
         model_report = {i: {} for i in df['Alpha'].unique().tolist()}
         if experiment == 1:
-            df = df[df['Round (t)'].isin(range(70, 81))]
-        # df_test = df[['Round (t)', 'Size of parameters', 'Strategy', 'Accuracy (%)', 'Experiment', 'Fraction fit', 'Dataset']].groupby(
-        #     ['Round (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset']).apply(
+            df = df[df['Rodada (t)'].isin(range(70, 81))]
+        # df_test = df[['Rodada (t)', 'Size of parameters', 'Strategy', 'Acurácia (%)', 'Experiment', 'Fraction fit', 'Dataset']].groupby(
+        #     ['Rodada (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset']).apply(
         #     lambda e: self.groupb_by_table(e)).reset_index()[
-        #     ['Round (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset', 'Size of parameters (bytes)', 'Accuracy (%)']]
+        #     ['Rodada (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset', 'Size of parameters (bytes)', 'Acurácia (%)']]
         elif experiment == 2:
-            df = df[df['Round (t)'].isin(range(70, 81))]
+            df = df[df['Rodada (t)'].isin(range(70, 81))]
             pass
         df_test = df[
-            ['Round (t)', 'Size of parameters', 'Strategy', 'Accuracy (%)', 'Experiment', 'Client selection', 'Fraction fit', 'Dataset', 'Alpha']]
+            ['Rodada (t)', 'Size of parameters (bytes)', 'Strategy', 'Acurácia (%)', 'Experiment', 'Client selection', 'Fraction fit', 'Dataset', 'Alpha', 'Eficiência']]
 
         # df_test = df_test.query("""Round in [10, 100]""")
         print("agrupou table")
@@ -341,22 +366,22 @@ class JointAnalysis():
             cifar10_acc = {}
             for column in columns:
 
-                # mnist_acc[column] = (self.filter(df_test, experiment, 'MNIST', float(column), strategy=model_name)['Accuracy (%)']*100).mean().round(6)
-                # cifar10_acc[column] = (self.filter(df_test, experiment, 'CIFAR10', float(column), strategy=model_name)['Accuracy (%)']*100).mean().round(6)
+                # mnist_acc[column] = (self.filter(df_test, experiment, 'MNIST', float(column), strategy=model_name)['Acurácia (%)']*100).mean().round(6)
+                # cifar10_acc[column] = (self.filter(df_test, experiment, 'CIFAR10', float(column), strategy=model_name)['Acurácia (%)']*100).mean().round(6)
                 # cologne_acc[column] = self.t_distribution((self.filter(df_test, experiment, 'Cologne',
                 #                                                        float(model_name), strategy=column)[
-                #     'Accuracy (%)']).tolist(), ci)
+                #     'Acurácia (%)']).tolist(), ci)
                 mnist_acc[column] = self.t_distribution((self.filter(df=df_test, experiment=experiment, dataset=dataset,
-                                                                     client_selection='Random', fraction_fit=fraction_fit, alpha=model_name, strategy=column)[
-                                         'Accuracy (%)']).tolist(), ci)
+                                                                     client_selection='Randômico', fraction_fit=fraction_fit, alpha=model_name, strategy=column)[
+                                         metric_column]).tolist(), ci)
                 cifar10_acc[column] = self.t_distribution((self.filter(df=df_test, experiment=experiment, dataset=dataset,
                                                                      client_selection='POC',
                                                                      fraction_fit=fraction_fit, alpha=model_name,
                                                                      strategy=column)[
-                    'Accuracy (%)']).tolist(), ci)
+                    metric_column]).tolist(), ci)
                 # gtsrb_acc[column] = self.t_distribution(
                 #     (self.filter(df_test, experiment, 'GTSRB', float(model_name), strategy=column)[
-                #         'Accuracy (%)']).tolist(), ci)
+                #         'Acurácia (%)']).tolist(), ci)
 
             model_metrics = []
 
@@ -427,19 +452,19 @@ class JointAnalysis():
 
             df_accuracy_improvements.iloc[i] = row
 
-        latex = df_accuracy_improvements.to_latex().replace("\\\nEMNIST", "\\\n\hline\nEMNIST").replace("\\\nGTSRB", "\\\n\hline\nGTSRB").replace("\\\nCIFAR-10", "\\\n\hline\nCIFAR-10").replace("\\bottomrule", "\\hline\n\\bottomrule").replace("\\midrule", "\\hline\n\\midrule").replace("\\toprule", "\\hline\n\\toprule").replace("textbf", r"\textbf").replace("\}", "}").replace("\{", "{").replace("\\begin{tabular", "\\resizebox{\columnwidth}{!}{\\begin{tabular}").replace("\$", "$").replace("textuparrow", "\oitextuparrow").replace("textdownarrow", "\oitextdownarrow").replace("\&", "&").replace("&  &", "& - &").replace("\_", "_").replace("&  \\", "& - \\").replace(" - " + r"\textbf", " " + r"\textbf").replace("_{DYN}", r"$_{\text{DYN}}$").replace("WISDM-W", r"\parbox[t]{2mm}{\multirow{10}{*}{\rotatebox[origin=c]{90}{WISDM-W}}}").replace("WISDM-P", r"\parbox[t]{2mm}{\multirow{10}{*}{\rotatebox[origin=c]{90}{WISDM-P}}}")
+        latex = df_accuracy_improvements.to_latex().replace("\\\nEMNIST", "\\\n\hline\nEMNIST").replace("\\\nGTSRB", "\\\n\hline\nGTSRB").replace("\\\nCIFAR-10", "\\\n\hline\nCIFAR-10").replace("\\bottomrule", "\\hline\n\\bottomrule").replace("\\midrule", "\\hline\n\\midrule").replace("\\toprule", "\\hline\n\\toprule").replace("textbf", r"\textbf").replace("\}", "}").replace("\{", "{").replace("\\begin{tabular", "\\resizebox{\columnwidth}{!}{\\begin{tabular}").replace("\$", "$").replace("textuparrow", r"\textuparrow").replace("textdownarrow", r"\textdownarrow").replace("\&", "&").replace("&  &", "& - &").replace("\_", "_").replace("&  \\", "& - \\").replace(" - " + r"\textbf", " " + r"\textbf").replace("_{DYN}", r"$_{\text{DYN}}$").replace("WISDM-W", r"\parbox[t]{2mm}{\multirow{10}{*}{\rotatebox[origin=c]{90}{WISDM-W}}}").replace("WISDM-P", r"\parbox[t]{2mm}{\multirow{10}{*}{\rotatebox[origin=c]{90}{WISDM-P}}}").replace("Randômico", fr"{nivel} & Randômico").replace("POC", "& POC").replace("& FedAvg &", "& & FedAvg &")
 
         base_dir = """analysis/output/experiment_{}/alphas_{}/datasets_{}/client_selection/""".format(str(experiment + 1), [0.1, 1.0], ['CIFAR-10', 'GTSRB'])
-        filename = """{}latex_{}.txt""".format(base_dir, str(experiment))
+        filename = """{}latex_{}_{}_{}_{}.txt""".format(base_dir, str(experiment), dataset, nivel, metric_column)
         pd.DataFrame({'latex': [latex]}).to_csv(filename, header=False, index=False)
 
-        self.improvements(df_table, experiment + 1)
+        self.improvements(df_table, experiment + 1, metric_column)
 
         #  df.to_latex().replace("\}", "}").replace("\{", "{").replace("\\\nRecall", "\\\n\hline\nRecall").replace("\\\nF-score", "\\\n\hline\nF1-score")
 
 
 
-    def improvements(self, df, experiment):
+    def improvements(self, df, experiment, metric_column):
 
         # r"CDA-FedAvg+FP$_{DYN}$": "CDA-FedAvg", r"CDA-FedAvg+FP": "CDA-FedAvg"
         strategies = {r"FedAvg+FP": "FedAvg"}
@@ -447,7 +472,7 @@ class JointAnalysis():
         print(df)
         # exit()
         columns = df.columns.tolist()
-        improvements_dict = {'Dataset': [], 'Strategy': [], 'Original strategy': [], 'Alpha': [], 'Accuracy (%)': []}
+        improvements_dict = {'Dataset': [], 'Strategy': [], 'Original strategy': [], 'Alpha': [], metric_column: []}
         df_improvements = pd.DataFrame(improvements_dict)
 
         for dataset in datasets:
@@ -460,10 +485,10 @@ class JointAnalysis():
                     index_original = (dataset, original_strategy)
                     print(index)
                     print(df.loc[index])
-                    acc = float(df.loc[index].tolist()[j].replace("textbf{", "")[:4])
-                    acc_original = float(df.loc[index_original].tolist()[j].replace("textbf{", "")[:4])
+                    acc = float(df.loc[index].tolist()[j].replace("textbf{", "")[:4].replace(u"\u00B1", ""))
+                    acc_original = float(df.loc[index_original].tolist()[j].replace("textbf{", "")[:4].replace(u"\u00B1", ""))
 
-                    row = {'Dataset': dataset, 'Strategy': strategy, 'Original strategy': original_strategy, 'Alpha': columns[j], 'Accuracy (%)': acc - acc_original}
+                    row = {'Dataset': dataset, 'Strategy': strategy, 'Original strategy': original_strategy, 'Alpha': columns[j], metric_column: acc - acc_original}
 
                     df_improvements = df_improvements.append(row, ignore_index=True)
 
@@ -472,17 +497,20 @@ class JointAnalysis():
 
     def groupb_by_plot(self, df):
         parameters = int(df['Size of parameters'].mean())
-        accuracy = float(df['Accuracy (%)'].mean())
+        accuracy = float(df['Acurácia (%)'].mean())
         loss = float(df['Loss'].mean())
         if df['Client selection'].to_numpy()[0] == 'DEEV':
             print("deev: ", df['Training cost'].to_numpy())
-        efficiency = accuracy/100/df['Training cost'].to_numpy()[0]
+        accuracy = np.round(accuracy, 2)
+        # print(df['Training cost'].to_numpy()[0] * 20, accuracy, accuracy/(df['Training cost'].to_numpy()[0] * 20))
+        # exit()
+        efficiency = accuracy/(df['Training cost'].to_numpy()[0] * 20)
 
-        return pd.DataFrame({'Size of parameters (bytes)': [parameters], 'Accuracy (%)': [accuracy], 'Loss': [loss], 'Efficiency': [efficiency]})
+        return pd.DataFrame({'Size of parameters (bytes)': [parameters], 'Acurácia (%)': [accuracy], 'Loss': [loss], 'Eficiência': [efficiency]})
 
     def filter(self, df, experiment, dataset, client_selection, fraction_fit, alpha, strategy=None):
 
-        # df['Accuracy (%)'] = df['Accuracy (%)']*100
+        # df['Acurácia (%)'] = df['Acurácia (%)']*100
         if strategy is not None:
             query = """Experiment=={} and Dataset=='{}' and Strategy=='{}'""".format(str(experiment), str(dataset), strategy)
             df = df.query(query)
@@ -511,13 +539,12 @@ class JointAnalysis():
         print("filtrado: ", df, df[hue].unique().tolist())
         line_plot(df=df, base_dir=base_dir, file_name=filename, x_column=x_column, y_column=y_column, title=title, hue=hue, ax=ax, tipo='' + str(experiment), hue_order=hue_order, style=style, markers=markers, size=size, sizes=sizes, y_max=y_max, y_lim=y_lim, style_order=style_order)
 
-    def joint_plot_acc_four_plots(self, df, experiment, alphas):
+    def joint_plot_acc_four_plots(self, df_test, experiment, alphas, dataset):
         print("Joint plot exeprimento: ", experiment)
 
-        df_test = df[['Round (t)', 'Loss', 'Size of parameters', 'Strategy', 'Accuracy (%)', 'Experiment', 'Fraction fit', 'Dataset', 'Version', 'Alpha', 'Client selection', 'Method', 'Training cost']].groupby(['Round (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset', 'Version', 'Alpha', 'Client selection', 'Method']).apply(lambda e: self.groupb_by_plot(e)).reset_index()[['Round (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset', 'Size of parameters (bytes)', 'Accuracy (%)', 'Loss', 'Version', 'Alpha', 'Client selection', 'Method']]
-        datast = df['Dataset'].unique().tolist()
+        datast = df_test['Dataset'].unique().tolist()
         print("agrupou plot")
-        print(df_test[df_test['Round (t)']==20])
+        print(df_test[df_test['Rodada (t)']==20])
         print(df_test)
         # exit()
         # figsize=(12, 9),
@@ -527,8 +554,8 @@ class JointAnalysis():
         fractions_fit = [0.3]
         fig, axs = plt.subplots(rows, cols,  sharex='all', sharey='all', figsize=(9, 6))
 
-        x_column = 'Round (t)'
-        y_column = 'Accuracy (%)'
+        x_column = 'Rodada (t)'
+        y_column = 'Acurácia (%)'
         plt.xlabel(x_column)
         plt.ylabel(y_column)
         base_dir = """analysis/output/experiment_{}/alphas_{}/datasets_{}/client_selection/""".format(str(experiment+1), alphas, datast)
@@ -537,20 +564,20 @@ class JointAnalysis():
             for j in range(cols):
                 alpha = alphas[i]
                 # dataset = datast[j]
-                dataset = 'GTSRB'
+                # dataset = 'GTSRB'
                 # dataset = 'CIFAR-10'
-                client_selection = self.client_selections[j]
+                client_selection = ['Randômico', 'POC', 'RAWCS'][j]
                 fraction_fit = self.fraction_fit[j]
                 print("cf: ", client_selection, fraction_fit)
-                title = """{}; \u03B1={}; {}""".format(dataset, alpha, client_selection)
+                title = """\u03B1={}; {}""".format(alpha, client_selection)
                 filename = ''
                 hue_order = ['FedAvg+FP', 'FedAvg']
                 # hue_order = ['FedAvg', 'CDA-FedAvg', 'FedCDM', 'FedPer']
                 # hue_order = None
-                style = 'Fraction fit'
+                style = 'Nível de seleção'
                 # "+FP",
                 # style_order = [r"+FP$_{DYN}$",  "+FP", "Original"]
-                style_order = [0.7, 0.5, 0.3]
+                style_order = ['Alto', 'Médio', 'Baixo']
                 y_max = 100
                 # markers = [',', '.'
                 markers = None
@@ -581,7 +608,7 @@ class JointAnalysis():
         plt.subplots_adjust(wspace=0.07, hspace=0.14)
         # plt.subplots_adjust(right=0.9)
         # fig.legend(
-        #            loc="lower right")
+        #            loc="Baixoer right")
         # fig.legend(lines, labels)
         # plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
         fig.supxlabel(x_column, y=-0.02)
@@ -635,13 +662,12 @@ class JointAnalysis():
         fig.savefig("""{}joint_plot_four_plot_{}_{}_rounds_{}_clients_{}.png""".format(base_dir, str(experiment), self.rounds, self.clients, dataset), bbox_inches='tight', dpi=400)
         fig.savefig("""{}joint_plot_four_plot_{}_{}_rounds_{}_clients_{}.svg""".format(base_dir, str(experiment), self.rounds, self.clients, dataset), bbox_inches='tight', dpi=400)
 
-    def joint_plot_acc_four_plots_efficiency(self, df, experiment, alphas):
+    def joint_plot_acc_four_plots_efficiency(self, df_test, experiment, alphas, dataset):
         print("Joint plot exeprimento: ", experiment)
 
-        df_test = df[['Round (t)', 'Loss', 'Size of parameters', 'Strategy', 'Accuracy (%)', 'Experiment', 'Fraction fit', 'Dataset', 'Version', 'Alpha', 'Client selection', 'Method', 'Training cost']].groupby(['Round (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset', 'Version', 'Alpha', 'Client selection', 'Method']).apply(lambda e: self.groupb_by_plot(e)).reset_index()[['Round (t)', 'Strategy', 'Experiment', 'Fraction fit', 'Dataset', 'Size of parameters (bytes)', 'Accuracy (%)', 'Loss', 'Version', 'Alpha', 'Client selection', 'Method', 'Efficiency']]
-        datast = df['Dataset'].unique().tolist()
+        datast = df_test['Dataset'].unique().tolist()
         print("agrupou plot")
-        print(df_test[df_test['Round (t)']==20])
+        print(df_test[df_test['Rodada (t)']==20])
         print(df_test)
         # exit()
         # figsize=(12, 9),
@@ -651,8 +677,8 @@ class JointAnalysis():
         fractions_fit = [0.3]
         fig, axs = plt.subplots(rows, cols,  sharex='all', sharey='all', figsize=(9, 6))
 
-        x_column = 'Round (t)'
-        y_column = 'Efficiency'
+        x_column = 'Rodada (t)'
+        y_column = 'Eficiência'
         plt.xlabel(x_column)
         plt.ylabel(y_column)
         base_dir = """analysis/output/experiment_{}/alphas_{}/datasets_{}/client_selection/""".format(str(experiment+1), alphas, datast)
@@ -661,9 +687,9 @@ class JointAnalysis():
             for j in range(cols):
                 alpha = alphas[i]
                 # dataset = datast[j]
-                dataset = 'GTSRB'
+                # dataset = 'GTSRB'
                 # dataset = 'CIFAR-10'
-                client_selection = self.client_selections[j]
+                client_selection = ['Randômico', 'POC', 'RAWCS'][j]
                 fraction_fit = self.fraction_fit[j]
                 print("cf: ", client_selection, fraction_fit)
                 title = """\u03B1={}; {}""".format(alpha, client_selection)
@@ -671,11 +697,11 @@ class JointAnalysis():
                 hue_order = ['FedAvg+FP', 'FedAvg']
                 # hue_order = ['FedAvg', 'CDA-FedAvg', 'FedCDM', 'FedPer']
                 # hue_order = None
-                style = 'Fraction fit'
+                style = 'Nível de seleção'
                 # "+FP",
                 # style_order = [r"+FP$_{DYN}$",  "+FP", "Original"]
-                style_order = [0.7, 0.5, 0.3]
-                y_max = 4
+                style_order = ['Alto', 'Médio', 'Baixo']
+                y_max = 20
                 # markers = [',', '.'
                 markers = None
                 size = None
@@ -705,7 +731,7 @@ class JointAnalysis():
         plt.subplots_adjust(wspace=0.07, hspace=0.14)
         # plt.subplots_adjust(right=0.9)
         # fig.legend(
-        #            loc="lower right")
+        #            loc="Baixoer right")
         # fig.legend(lines, labels)
         # plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
         fig.supxlabel(x_column, y=-0.02)
