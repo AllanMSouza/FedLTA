@@ -199,11 +199,11 @@ class Verify:
         print("tamanho y: ", len(y), len(rounds_without_fit_list), len(x_new), len(sm_list))
         x_column = 'Round (t)'
         if index == 0:
-            y_column = '$gw$'
+            y_column = '$F(el, ul, s)$'
         else:
             y_column = 'ul'
         hue = 'nt'
-        style = 'df'
+        style = 's'
         hue_order = [100, 10, 5, 2, 1]
         print(len(x), len(y), len(rounds_without_fit_list))
         df = pd.DataFrame({x_column: x_new, y_column: y, hue: rounds_without_fit_list, style: sm_list})
@@ -224,19 +224,21 @@ class Verify:
         #               title=title)
         # else:
         # fig, ax = plt.subplots(1,1)
+        plt.plot()
         line_plot(df=df,
                  base_dir=self.base_dir,
                  file_name="curve_dynamic",
                  x_column=x_column,
                  y_column=y_column,
                  title=title,
+                  ax=None,
                   hue=hue,
                   style=style,
                   y_lim=True,
                   y_max=1,
                   y_min=0,
                   hue_order=hue_order,
-                  tipo='dynamic')
+                  tipo='curve_dynamic')
 
         # lines_labels = [ax.get_legend_handles_labels()]
         # lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]

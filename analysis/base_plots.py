@@ -165,9 +165,9 @@ def line_plot(df, base_dir, file_name, x_column, y_column, title, hue=None, log_
     plt.rcParams.update(params)
 
     # sns.set(style='whitegrid')
-    ax.grid(False)
+    # ax.grid(False)
     if tipo is not None:
-        if 'dynamic' in tipo:
+        if 'dynamic' in tipo and ax is not None:
             ax.grid(False)
     log = ""
     if log_scale:
@@ -242,8 +242,46 @@ def line_plot(df, base_dir, file_name, x_column, y_column, title, hue=None, log_
                     new_labels[i] = "nt=" + new_labels[i]
                 new_labels_2.append(new_labels[i])
         aa.legend(new_handles, new_labels_2, fontsize=8, ncols=3)
+    elif tipo == 'curve_dynamic':
+        aa = figure.get_figure().axes[0]
+        # print(ax)
+        # exit()
+        lines_labels = [aa.get_legend_handles_labels()]
+        lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+        colors = []
+        aa.get_legend().remove()
+        for i in range(len(lines)):
+            color = lines[i].get_color()
+            colors.append(color)
+            ls = lines[i].get_ls()
+            if ls not in ["o"]:
+                ls = "o"
+        markers = ["", "-", "--"]
+        # plt.grid()
+        new_labels = []
+        for i in range(len(labels)):
+            if i != n:
+                new_labels.append(labels[i])
+            else:
+                print("label: ", labels[i])
+        new_labels[-1] = 's=' + new_labels[-1]
+        new_labels[-2] = 's=' + new_labels[-2]
+
+        new_labels_2 = []
+
+        f = lambda m, c: plt.plot([], [], marker=m, color=c, ls="none")[0]
+        handles = [f("o", colors[i]) for i in range(len(hue_order) + 1)]
+        handles += [plt.Line2D([], [], linestyle=markers[i], color="k") for i in range(3)]
+        new_handles = []
+        for i in range(len(handles)):
+            if i not in [0, 6]:
+                new_handles.append(handles[i])
+                if i <= 6:
+                    new_labels[i] = "nt=" + new_labels[i]
+                new_labels_2.append(new_labels[i])
+        aa.legend(new_handles, new_labels_2, fontsize=8, ncols=3)
     elif tipo is not None:
-        if 'dynamic' in tipo:
+        if 'dynamic' in tipo and ax is not None:
             x_size = len(df[x_column].unique().tolist())
             ax.vlines(x=[int(0.7 * x_size)], ymin=0, ymax=100, colors='silver', ls='--', lw=1,
                       label='vline_multiple - full height')
@@ -267,12 +305,14 @@ def line_plot(df, base_dir, file_name, x_column, y_column, title, hue=None, log_
     # sns.set(style='whitegrid', palette=palette)
 
     if ax is None:
-        print("chh")
+        print("chh", base_dir)
         figure = figure.get_figure()
         Path(base_dir + "png/").mkdir(parents=True, exist_ok=True)
         Path(base_dir + "svg/").mkdir(parents=True, exist_ok=True)
+        Path(base_dir + "pdf/").mkdir(parents=True, exist_ok=True)
         figure.savefig(base_dir + "png/" + file_name + log + ".png", bbox_inches='tight', dpi=400)
         figure.savefig(base_dir + "svg/" + file_name + log + ".svg", bbox_inches='tight', dpi=400)
+        figure.savefig(base_dir + "pdf/" + file_name + log + ".pdf", bbox_inches='tight', dpi=400)
 
 def stacked_plot(df, base_dir, file_name, x_column, y_column, title, hue=None, log_scale=False, ax=None, type=None, hue_order=None, style=None, y_lim=False, y_min=0, y_max=1, n=None):
     Path(base_dir + "png/").mkdir(parents=True, exist_ok=True)

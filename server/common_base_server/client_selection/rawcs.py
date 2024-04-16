@@ -133,6 +133,7 @@ class Rawcs(fl.server.strategy.FedAvg):
         self.transmission_threshold = 0.2
         # self.devices_profile = devices_profile
         if fraction_fit == 0.3:
+            battery = 0.45 # 0.5
             self.link_quality_lower_lim = 0.5  # lq_min
             self.limit_relationship_max_latency = 0  # pt_max
             level = 'low'
@@ -140,15 +141,18 @@ class Rawcs(fl.server.strategy.FedAvg):
             # self.link_quality_lower_lim = 0.3  # lq_min
             # self.limit_relationship_max_latency = 0.3  # pt_max
             # level = 'medium'
-            self.link_quality_lower_lim = 0.3  # lq_min
-            self.limit_relationship_max_latency = 0.3  # pt_max
+            battery = 0.35 # 0.45
+            self.link_quality_lower_lim = 0.05  # lq_min
+            self.limit_relationship_max_latency = 0.4  # pt_max
             level = 'medium'
         elif fraction_fit == 0.7:
-            self.link_quality_lower_lim = 0.1  # lq_min
-            self.limit_relationship_max_latency = 0.5  # pt_max
+            battery = 0.05
+            self.link_quality_lower_lim = 0.01  # lq_min
+            self.limit_relationship_max_latency = 7 # pt_max
             level = 'high'
+            # args.dataset.lower(),
         self.network_profiles = """./clients_selection_configuration_files/rawcs/sim_1_num_clients_{}_num_rounds_100.pkl""".format(num_clients)
-        self.devices_profile = """./clients_selection_configuration_files/rawcs/profiles_sim_{}_seed_1_level_{}_alpha_{}.json""".format(args.dataset.lower(), level, args.alpha)
+        self.devices_profile = """./clients_selection_configuration_files/rawcs/profiles_sim_cifar10_seed_1_level_{}_alpha_{}_battery_{}.json""".format( level, args.alpha, battery)
         # self.devices_profile = """./clients_selection_configuration_files/rawcs/profiles_sim_Cifar10_seed_1.json"""
         # self.sim_idx = sim_idx
         # self.input_shape = input_shape

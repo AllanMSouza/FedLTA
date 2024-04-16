@@ -39,14 +39,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 # EXPERIMENT 4
 # Algorithm = 'None', poc=[0.1, 0.2, 0.3] and new_client = TRUE new_clients_train = TRUE
 # ======================================================================
-# EXPERIMENT 5
+# EXPERIMENT 5-----------------------------------------
 # Algorithm = 'POC, poc=[0.1, 0.2, 0.3]' and new_client = TRUE new_clients_train = TRUE
 #  Local epochs = 2
 # ======================================================================
 # Configurations
 TYPE = 'torch'
 # DATASETS      				= ['MNIST', 'CIFAR10', 'Tiny-ImageNet']
-DATASETS = ['CIFAR10']
+DATASETS = ['GTSRB']
 # DATASETS      					= ['UCIHAR', 'MotionSense']
 MODELS = ['CNN_1']
 ALGORITHMS = ['None', 'POC', 'DEEV']
@@ -60,7 +60,8 @@ CLIENTS = {'MNIST': [8], 'CIFAR10': [20], 'EMNIST': [20], 'CIFAR100': [50], 'Mot
            'Tiny-ImageNet': [2], 'State Farm': [10], 'GTSRB': [20], 'ExtraSensory': [1], 'WISDM-WATCH': [20], 'WISDM-P': [20], 'Cologne': [20]}
 ALPHA = [0.1, 1.0]
 # ALPHA = [1]
-FRACTION_FIT = {'None': [0.3], 'POC': [0.3, 0.5, 0.7], 'DEEV': [], 'RAWCS': [0.3]}
+FRACTION_FIT = {'None': [0.3, 0.5, 0.7], 'POC': [0.3], 'DEEV': [], 'RAWCS': [0.3, 0.5, 0.7
+                                                                   ]}
 SPECIFIC_PARAMETERS = {'FedAVG': {'use_gradient': 'True', 'bits': 8}, 'FedKD': {'use_gradient': '', 'bits': 8},
                        'FedPAQ': {'use_gradient': 'True', 'bits': 8}, 'FedDistill': {'use_gradient': '', 'bits': 8},
                        'FedPredict': {'use_gradient': 'True', 'bits': 8}, 'FedPredict_Dynamic': {'use_gradient': 'True', 'bits': 8}, 'FedPer_with_FedPredict': {'use_gradient': 'True', 'bits': 8},
@@ -77,12 +78,12 @@ DECAY = {'None': 0, 'POC': 0, 'DEEV': 0.001, 'RAWCS': 0}
 NEW_CLIENTS = {'None': ['FALSE'], 'POC': ['FALSE', 'TRUE']}
 NEW_CLIENTS_TRAIN = {'FALSE': ['FALSE'], 'TRUE': ['FALSE', 'TRUE']}
 # DECAY         				= (0.001, 0.005, 0.009)
-ROUNDS = 25
+ROUNDS = 100
 # STRATEGIES 					= ('FedPredict', 'FedPer', 'FedClassAvg', 'FedAVG', 'FedClassAvg_with_FedPredict', 'FedPer_with_FedPredict', 'FedProto', 'FedYogi', 'FedLocal',)
 # STRATEGIES_FOR_ANALYSIS = ['FedKD', 'FedAVG', 'FedPAQ']
 # STRATEGIES_TO_EXECUTE = ['FedKD', 'FedAVG']
-STRATEGIES_FOR_ANALYSIS = {'40': ['FedAVG', 'FedPredict'], '43': ['FedPredict'], '42': ['FedAVG', 'FedPredict'],  '3': [], '6': ['FedPredict'], '7': ['FedPredict'], '14': ['FedSparsification'], '10': [], '11': [], '15': [], '16': ['FedAVG'], '17': ['FedPredict'], '19': ['FedPredict'], '22': ['FedPredict'], '26': ['FedPredict'], '30': ['FedPredict'], '31': ['FedPredict'], '32': ['FedPredict']}
-STRATEGIES_TO_EXECUTE = {'40': ['FedAVG', 'FedPredict'], '43': ['FedPredict'], '42': ['FedAVG', 'FedPredict'], '3': ['FedClassAvg'],  '6': ['FedPredict_Dynamic'], '7': [], '10': ['FedPredict_Dynamic'], '11': ['FedPredict_Dynamic'], '14': ['FedAVG'], '15': ['FedClassAvg'], '16': ['FedAVG'], '17': ['FedPredict'], '19': ['FedPredict'], '22': ['FedPredict'], '26': ['FedPredict'], '30': ['FedPredict'], '31': ['FedPredict'], '32': ['FedPredict']}
+STRATEGIES_FOR_ANALYSIS = {'40': ['FedAVG', 'FedPredict'], '43': ['FedAVG', 'FedPredict'], '41': ['FedPredict'],  '3': [], '6': ['FedPredict'], '7': ['FedPredict'], '14': ['FedSparsification'], '10': [], '11': [], '15': [], '16': ['FedAVG'], '17': ['FedPredict'], '19': ['FedPredict'], '22': ['FedPredict'], '26': ['FedPredict'], '30': ['FedPredict'], '31': ['FedPredict'], '32': ['FedPredict']}
+STRATEGIES_TO_EXECUTE = {'40': ['FedAVG', 'FedPredict'], '43': ['FedAVG', 'FedPredict'], '41': ['FedPredict'], '3': ['FedClassAvg'],  '6': ['FedPredict_Dynamic'], '7': [], '10': ['FedPredict_Dynamic'], '11': ['FedPredict_Dynamic'], '14': ['FedAVG'], '15': ['FedClassAvg'], '16': ['FedAVG'], '17': ['FedPredict'], '19': ['FedPredict'], '22': ['FedPredict'], '26': ['FedPredict'], '30': ['FedPredict'], '31': ['FedPredict'], '32': ['FedPredict']}
 N_CLUSTERS = [3]
 CLUSTERING = "Yes"
 CLUSTER_ROUND = [int(ROUNDS*0.5)]
